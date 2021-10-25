@@ -132,14 +132,14 @@ def jwt_encode_payload(payload):
     return enc
 
 
-def jwt_decode_token(token):
+def jwt_decode_token(token, verify_exp=api_settings.JWT_VERIFY_EXPIRATION):
     """Decode JWT token claims."""
 
     if jwt_version == 2 and type(token) == bytes:
         token = token.decode()
 
     options = {
-        'verify_exp': api_settings.JWT_VERIFY_EXPIRATION,
+        'verify_exp': verify_exp,
     }
 
     algorithms = api_settings.JWT_ALGORITHM
@@ -206,11 +206,11 @@ def jwt_create_response_payload(
     return {'pk': issued_at, 'token': token}
 
 
-def check_payload(token):
+def check_payload(token, *args, **kwargs):
     from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
     try:
-        payload = JSONWebTokenAuthentication.jwt_decode_token(token)
+        payload = JSONWebTokenAuthentication.jwt_decode_token(token, *args, **kwargs)
     except ExpiredSignature:
         msg = _('Token has expired.')
         raise serializers.ValidationError(msg)

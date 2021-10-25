@@ -92,7 +92,7 @@ class RefreshAuthTokenSerializer(serializers.Serializer):
     def validate(self, data):
         token = data['token']
 
-        payload = check_payload(token=token)
+        payload = check_payload(token=token, verify_exp=False)
         user = check_user(payload=payload)
 
         # Get and check 'orig_iat'
