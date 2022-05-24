@@ -107,23 +107,25 @@ def jwt_get_username_from_payload_handler(payload):
     return payload.get('username')
 
 
-def jwt_encode_payload(payload):
+def jwt_encode_payload(payload, key=None, signing_algorithm=None):
     """Encode JWT token claims."""
 
-    headers=None
+    headers = None
 
-    signing_algorithm = api_settings.JWT_ALGORITHM
-    if isinstance(signing_algorithm,list):
+    signing_algorithm = signing_algorithm or api_settings.JWT_ALGORITHM
+    if isinstance(signing_algorithm, list):
         signing_algorithm = signing_algorithm[0]
-    if signing_algorithm.startswith("HS"):
-        key = jwt_get_secret_key(payload)
-    else:
-        key = api_settings.JWT_PRIVATE_KEY
+
+    if not key:
+        if signing_algorithm.startswith("HS"):
+            key = jwt_get_secret_key(payload)
+        else:
+            key = api_settings.JWT_PRIVATE_KEY
 
     if isinstance(key, dict):
         kid, key = next(iter(key.items()))
         headers = {"kid": kid}
-    elif isinstance(key,list):
+    elif isinstance(key, list):
         key = key[0]
 
     enc = jwt.encode(payload, key, signing_algorithm, headers=headers, json_encoder=JSONEncoder)
@@ -153,7 +155,6 @@ def jwt_decode_token(token, verify_exp=api_settings.JWT_VERIFY_EXPIRATION):
 
     kid = hdr["kid"] if "kid" in hdr else None
 
-    keys = None
     if alg_hdr.startswith("HS"):
         unverified_payload = jwt_decode(token, key=None, verify=False)
         keys = jwt_get_secret_key(unverified_payload)
