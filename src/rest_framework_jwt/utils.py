@@ -107,10 +107,8 @@ def jwt_get_username_from_payload_handler(payload):
     return payload.get('username')
 
 
-def jwt_encode_payload(payload, key=None, signing_algorithm=None):
+def jwt_encode_payload(payload, headers=None, key=None, signing_algorithm=None):
     """Encode JWT token claims."""
-
-    headers = None
 
     signing_algorithm = signing_algorithm or api_settings.JWT_ALGORITHM
     if isinstance(signing_algorithm, list):
